@@ -7,7 +7,7 @@ import "./PriceOracle.sol";
 import "./ComptrollerInterface.sol";
 import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
-import "./Governance/Comp.sol";
+import "./Governance/EFF.sol";
 
 /**
  * @title Compound's Comptroller Contract
@@ -1373,10 +1373,10 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
      * @return The amount of COMP which was NOT transferred to the user
      */
     function grantCompInternal(address user, uint amount) internal returns (uint) {
-        Comp comp = Comp(getCompAddress());
-        uint compRemaining = comp.balanceOf(address(this));
+        EFF eff = EFF(getCompAddress());
+        uint compRemaining = eff.balanceOf(address(this));
         if (amount > 0 && amount <= compRemaining) {
-            comp.transfer(user, amount);
+            eff.transfer(user, amount);
             return 0;
         }
         return amount;
