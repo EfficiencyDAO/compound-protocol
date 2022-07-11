@@ -82,7 +82,7 @@ Installation
 ------------
 To run efficiency protocol, pull the repository from GitHub and install its dependencies. You will need [yarn](https://yarnpkg.com/lang/en/docs/install/) or [npm](https://docs.npmjs.com/cli/install) installed.
 
-    git clone https://github.com/compound-finance/compound-protocol
+    git clone https://github.com/EfficiencyDAO/compound-protocol
     cd compound-protocol
     yarn install --lock-file # or `npm install`
 
@@ -92,3 +92,18 @@ Testing
 Hardhat contract tests are defined under the [test directory](https://github.com/efficiency-finance/efficiency-protocol/tree/master/test). To run the tests run:
 
     yarn test
+
+
+Change Logs
+-------
+
+Efficiency has forked compound protocol since commit : [a3214f67b73310d547e00fc578e8355911c9d376](https://github.com/compound-finance/compound-protocol/tree/a3214f67b73310d547e00fc578e8355911c9d376).
+New features and PRs (back to compound) will be added in as necessary.
+
+The summary of changes is as follows:
+
+- Include hardhat for updated deployment configuration and testing.
+- Include FeedPriceOracle.sol, to fetch oracle prices from Chainlink.
+- Include Governance/EFF.sol to deploy the EFF token.
+- Include Lockdrop.sol, for EFF lockdrop token distribution.
+- Setup a eMarkets deployment sequence with hardhat-deploy.
