@@ -5,24 +5,16 @@ The Efficiency Protocol is Efficiency DAOs lending interface, based on Compound 
 
 The Efficiency Protocol offers supplying or borrowing assets through the BSC network. Through the eToken contracts, accounts on the blockchain *supply* capital (Bnb or BEP-20 tokens) to receive eTokens or *borrow* assets from the protocol (holding other assets as collateral). The Efficiency eToken contracts track these balances and algorithmically set interest rates for borrowers.
 
-Before getting started with this repo, please read about Compound Protocol:
+Before getting started with this repo, please read about [Compound Protocol](https://github.com/compound-finance/compound-protocol/)
 
-* The [Compound Whitepaper](https://compound.finance/documents/Compound.Whitepaper.pdf), describing how Compound works
-* The [Compound Protocol Specification](https://github.com/compound-finance/compound-protocol/tree/master/docs/CompoundProtocol.pdf), explaining in plain English how the protocol operates
-
-For questions about interacting with Compound, please visit [our Discord server](https://compound.finance/discord).
+For questions about interacting with Efficiency, please visit [our Discord server](https://compound.finance/discord).
 
 For security concerns, please visit [https://efficiency.finance/security](https://efficiency.finance/security) or email [security@efficiency.finance](mailto:security@efficiency.finance).
-
-Contributing
-============
-
-Contributing to the Compound protocol is a bit different than most open-source projects -- check out the [community guide on Contributing](https://www.comp.xyz/t/contributing-to-compound-protocol/48).
 
 Contracts
 =========
 
-We detail a few of the core contracts in the Compound protocol.
+We detail a few of the core contracts in the Efficiency protocol.
 
 <dl>
   <dt>CToken, CErc20 and CEther</dt>
