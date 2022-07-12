@@ -8,8 +8,9 @@ module.exports = async ({
 
     const Unitroller = await deployments.get('Unitroller');
     const Model = await deployments.get('BusdInterestRateModel');
+    const Implementation = await deployments.get('Implementation');
 
-    await deploy('CErc20Immutable', {
+    await deploy('CErc20Delegator', {
         from: deployer,
         args: [
             busd,
@@ -19,13 +20,15 @@ module.exports = async ({
             "Efficiency BUSD",
             "eBUSD",
             "8",
-            deployer
+            deployer,
+            Implementation.address,
+            0x00
         ]
     });
 
-    const CERC20 = await deployments.get('CErc20Immutable');
+    const CERC20 = await deployments.get('CErc20Delegator');
     await save("eBUSD", CERC20);
 };
 
-module.exports.dependencies = ['BusdInterestRateModel', 'Unitroller'];
+module.exports.dependencies = ['Implementation', 'BusdInterestRateModel', 'Unitroller'];
 module.exports.tags = ['eBUSD'];

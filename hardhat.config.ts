@@ -28,8 +28,16 @@ const config: HardhatUserConfig = {
     },
     defaultNetwork: "hardhat",
     networks: {
-        localhost: {},
-        hardhat: {},
+        localhost: {
+            forking: {
+                url: 'https://data-seed-prebsc-1-s1.binance.org:8545'
+            }
+        },
+        hardhat: {
+            forking: {
+                url: 'https://data-seed-prebsc-1-s1.binance.org:8545'
+            }
+        },
         bsc: {
             url: `https://bsc-dataseed.binance.org`,
             chainId: 56,
@@ -49,14 +57,17 @@ const config: HardhatUserConfig = {
             default: 0
         },
         busd: {
+            31337: '0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee',
             56: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
             97: '0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee'
         },
         usdc: {
+            31337: '0x64544969ed7EBf5f083679233325356EbE738930',
             56: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
             97: '0x64544969ed7EBf5f083679233325356EbE738930'
         },
         usdt: {
+            31337: '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd',
             56: '0x55d398326f99059ff775485246999027b3197955',
             97: '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd'
         },
