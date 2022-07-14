@@ -4,14 +4,14 @@ module.exports = async ({
 }) => {
     console.log("21. Set USDT price feed")
     const { execute } = deployments;
-    const { deployer, bnbFeed } = await getNamedAccounts()
+    const { deployer, usdtFeed } = await getNamedAccounts()
 
     await execute('FeedPriceOracle', {
         from: deployer,
     },
         "setFeed",
         (await deployments.get('eUSDT')).address,
-        bnbFeed,
+        usdtFeed,
         18
     )
     return true
