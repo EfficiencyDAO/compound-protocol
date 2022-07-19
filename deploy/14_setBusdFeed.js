@@ -2,7 +2,7 @@ module.exports = async ({
     deployments,
     getNamedAccounts
 }) => {
-    console.log("13. Set BUSD price feed")
+    console.log("14. Set BUSD price feed")
     const { execute } = deployments;
     const { deployer, busdFeed } = await getNamedAccounts()
 

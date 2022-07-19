@@ -2,7 +2,7 @@ module.exports = async ({
     deployments,
     getNamedAccounts,
 }) => {
-    console.log("23. Attach Oracle to comptroller")
+    console.log("24. Attach Oracle to comptroller")
     const { execute } = deployments;
     const { deployer } = await getNamedAccounts()
 

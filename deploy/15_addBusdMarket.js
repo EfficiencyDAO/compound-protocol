@@ -2,7 +2,7 @@ module.exports = async ({
     deployments,
     getNamedAccounts,
 }) => {
-    console.log("18. Add USDC Market")
+    console.log("15. Add BUSD Market")
     const { execute } = deployments;
     const { deployer } = await getNamedAccounts()
 
@@ -10,11 +10,11 @@ module.exports = async ({
         from: deployer
     },
         "_supportMarket",
-        (await deployments.get('eUSDC')).address
+        (await deployments.get('eBUSD')).address
     )
     return true
 };
 
-module.exports.id = 'addUsdcMarket'
-module.exports.tags = ['addUsdcMarket'];
-module.exports.dependencies = ['Unitroller', 'eUSDC'];
+module.exports.id = 'addBusdMarket'
+module.exports.tags = ['addBusdMarket'];
+module.exports.dependencies = ['Unitroller', 'eBUSD'];

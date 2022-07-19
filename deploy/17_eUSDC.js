@@ -2,23 +2,23 @@ module.exports = async ({
     deployments,
     getNamedAccounts
 }) => {
-    console.log("20. Deploy eUSDT")
+    console.log("17. Deploy eUSDC")
     const { deploy, save } = deployments;
-    const { deployer, usdt } = await getNamedAccounts()
+    const { deployer, usdc } = await getNamedAccounts()
 
     const Unitroller = await deployments.get('Unitroller');
-    const Model = await deployments.get('UsdtInterestRateModel');
+    const Model = await deployments.get('UsdcInterestRateModel');
     const Implementation = await deployments.get('Implementation');
 
     await deploy('CErc20Delegator', {
         from: deployer,
         args: [
-            usdt,
+            usdc,
             Unitroller.address,
             Model.address,
             "200000000000000000000000000",
-            "Efficiency USDT",
-            "eUSDT",
+            "Efficiency USDC",
+            "eUSDC",
             "8",
             deployer,
             Implementation.address,
@@ -27,8 +27,8 @@ module.exports = async ({
     });
 
     const CERC20 = await deployments.get('CErc20Delegator');
-    await save("eUSDT", CERC20);
+    await save("eUSDC", CERC20);
 };
 
-module.exports.dependencies = ['Implementation', 'UsdtInterestRateModel', 'Unitroller'];
-module.exports.tags = ['eUSDT'];
+module.exports.dependencies = ['Implementation', 'UsdcInterestRateModel', 'Unitroller'];
+module.exports.tags = ['eUSDC'];

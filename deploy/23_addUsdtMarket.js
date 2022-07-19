@@ -2,7 +2,7 @@ module.exports = async ({
     deployments,
     getNamedAccounts,
 }) => {
-    console.log("22. Add USDT Market")
+    console.log("23. Add USDT Market")
     const { execute } = deployments;
     const { deployer } = await getNamedAccounts()
 

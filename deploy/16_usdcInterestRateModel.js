@@ -2,7 +2,7 @@ module.exports = async ({
     deployments,
     getNamedAccounts
 }) => {
-    console.log("6. Deploy USDT Interest Rate Model")
+    console.log("16. Deploy USDC Interest Rate Model")
     const { deploy, save } = deployments;
     const { deployer } = await getNamedAccounts()
 
@@ -15,7 +15,7 @@ module.exports = async ({
     });
 
     const Model = await deployments.get('WhitePaperInterestRateModel');
-    await save("UsdtInterestRateModel", Model);
+    await save("UsdcInterestRateModel", Model);
 };
 
-module.exports.tags = ['UsdtInterestRateModel'];
+module.exports.tags = ['UsdcInterestRateModel'];
