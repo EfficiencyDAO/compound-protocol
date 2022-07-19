@@ -89,7 +89,7 @@ To run efficiency protocol, pull the repository from GitHub and install its depe
 
 Testing
 -------
-Hardhat contract tests are defined under the [test directory](https://github.com/efficiency-finance/efficiency-protocol/tree/master/test). To run the tests run:
+Hardhat contract tests are defined under the [test directory](https://github.com/efficiency-finance/efficiency-protocol/tree/main/test). To run the tests run:
 
     yarn test
 

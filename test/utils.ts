@@ -1,4 +1,3 @@
-const hre = require("hardhat")
 import { ethers } from 'hardhat'
 
 export let wallets = {
@@ -6,15 +5,6 @@ export let wallets = {
     admin: null as any,
     delegate: null as any
 }
-
-let EFFArtifact
-let CBnbArtifact
-let ComptrollerArtifact
-let UnitrollerArtifact
-let CErc20DelegatorArtifact
-let WhitePaperInterestRateModel
-let TokenErrorReporterArtifact
-let FeedPriceOracleArtifact
 
 let eff
 let eBnb
@@ -25,18 +15,8 @@ let whitePaperInterestRateModel
 let implementation
 let signers
 
-export const init = async () => {
-    // EFFArtifact = await hre.artifacts.readArtifact('EFF')
-    
-    CBnbArtifact = await hre.artifacts.readArtifact('CBnb')
-    ComptrollerArtifact = await hre.artifacts.readArtifact('Comptroller')
-    UnitrollerArtifact = await hre.artifacts.readArtifact('Unitroller')
-    TokenErrorReporterArtifact = await hre.artifacts.readArtifact('TokenErrorReporter')
-    CErc20DelegatorArtifact = await hre.artifacts.readArtifact('CErc20Delegator')
-    WhitePaperInterestRateModel = await hre.artifacts.readArtifact('WhitePaperInterestRateModel')
-    FeedPriceOracleArtifact = await hre.artifacts.readArtifact('FeedPriceOracle')
-
-    signers = await hre.ethers.getSigners()
+export const init = async () => {    
+    signers = await ethers.getSigners()
 
     wallets.admin = signers[0]
     wallets.deployer = signers[1]
@@ -133,32 +113,7 @@ export const getUnitrollerProxy = async (unitroller_ = unitroller.address, accou
     return unitrollerProxy.connect(wallets.deployer)
 }
 
-
-export const callUnitrollerFunction = async (unitroller_ = unitroller.address, account = wallets.deployer, method, ...args) => {
-    const unitrollerProxy = await ethers.getContractAt(
-        "Comptroller",
-        unitroller_,
-    )
-
-    return unitrollerProxy.connect(wallets.deployer).methods[method](...args)
-}
-
 export const supportMarket = async (_unitroller, market, account) => {
-    const unitrollerProxy = await hre.ethers.getContractAt("Comptroller", _unitroller)
+    const unitrollerProxy = await ethers.getContractAt("Comptroller", _unitroller)
     return await unitrollerProxy.connect(account)._supportMarket(market)
-}
-
-export const enterMarkets = async (_unitroller: string, eTokens: string[], account) => {
-    const unitrollerProxy = await hre.ethers.getContractAt("Comptroller", _unitroller)
-    return await unitrollerProxy.connect(account).enterMarkets(eTokens)
-}
-
-export const checkMembership = async (_unitroller, eToken, account) => {
-    const unitrollerProxy = await hre.ethers.getContractAt("Comptroller", _unitroller)
-    return await unitrollerProxy.connect(account).checkMembership(account.address, eToken)
-}
-
-export const getAssetsIn = async (_unitroller, account) => {
-    const unitrollerProxy = await hre.ethers.getContractAt("Comptroller", _unitroller)
-    return await unitrollerProxy.connect(account).getAssetsIn(account.address)
 }
