@@ -34,9 +34,9 @@ const config: HardhatUserConfig = {
             }
         },
         hardhat: {
-            // forking: {
-            //     url: 'https://data-seed-prebsc-1-s1.binance.org:8545'
-            // }
+            forking: {
+                url: 'https://data-seed-prebsc-1-s1.binance.org:8545'
+            }
         },
         bsc: {
             url: `https://bsc-dataseed.binance.org`,

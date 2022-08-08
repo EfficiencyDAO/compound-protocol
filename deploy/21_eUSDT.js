@@ -10,8 +10,9 @@ module.exports = async ({
     const Model = await deployments.get('UsdtInterestRateModel');
     const Implementation = await deployments.get('Implementation');
 
-    await deploy('CErc20Delegator', {
+    const eUSDT = await deploy('CErc20Delegator', {
         from: deployer,
+        gasLimit: 25000000,
         args: [
             usdt,
             Unitroller.address,
@@ -26,8 +27,7 @@ module.exports = async ({
         ]
     });
 
-    const CERC20 = await deployments.get('CErc20Delegator');
-    await save("eUSDT", CERC20);
+    await save("eUSDT", eUSDT);
 };
 
 module.exports.dependencies = ['Implementation', 'UsdtInterestRateModel', 'Unitroller'];

@@ -79,88 +79,95 @@ const ERC20_ABI = [
 const ORACLE_ABI = [
     'function getUnderlyingPrice(address) public view returns (uint)',
     'function feeds(address) public view returns (address)',
+    'function setFeed(address, address, uint8)',
     'function setFixedPrice(address, uint256)',
+    'function removeFixedPrice(address)',
     'function removeFeed(address)'
 ]
-const COMPTROLLER_ADDRESS = '0x9eE9C1Ea4Fb0BAeb74548Bd5f22084c0D125d386'
-const ORACLE_ADDRESS = '0xa35aC73c31Dd438C5AB2E811433033B1B0D468B3'
-const eBNB_ADDRESS = '0xE13Bc636e14D4FB7434D81bA38B30C68d8490cac'
-const eBUSD_ADDRESS = '0x04A81EDcdE193C38Fb2C183D1D693Ed6ca812Ec1'
-const eUSDT_ADDRESS = '0x10EC7842A2c21F1c74Ba180f4Ee63Fc0fc3AC8e5'
-const eUSDC_ADDRESS = '0xca41Ca3Be871f12B6fa7E3e2F711de2F8E33C11A'
+const COMPTROLLER_ADDRESS = '0x38dF8130ad9B65854d10D235B397F55A49A9E831'
+const ORACLE_ADDRESS = '0x45Bc3D5C66558Cfff24d96Ac37eAa1153336A912'
+const eBNB_ADDRESS = '0xb5a2cc8385081046fF70e150B2bf8f95b2812485'
+const eBUSD_ADDRESS = '0xFAF758dbAAb122ba8485d3faC0b633BEe3837723'
+const eUSDT_ADDRESS = '0x38689e08F4Ce7ebE5F29EC9a7c626a64ffa5DfA7'
+const eUSDC_ADDRESS = '0x096aa7ab54BCC796717416c3B656d4A1B7435C31'
 
-const BUSD_ADDRESS = '0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee'
+const BUSD_ADDRESS = '0xe9e7cea3dedca5984780bafc599bd69add087d56'
 const BUSD_SLOT = 1;
 
-const toBytes32 = (bn) => {
-    return ethers.utils.hexlify(ethers.utils.zeroPad(bn.toHexString(), 32));
-};
+// const toBytes32 = (bn) => {
+//     return ethers.utils.hexlify(ethers.utils.zeroPad(bn.toHexString(), 32));
+// };
 
-const setStorageAt = async (address, index, value) => {
-    await ethers.provider.send("hardhat_setStorageAt", [address, index, value]);
-    await ethers.provider.send("evm_mine", []);
-};
+// const setStorageAt = async (address, index, value) => {
+//     await ethers.provider.send("hardhat_setStorageAt", [address, index, value]);
+//     await ethers.provider.send("evm_mine", []);
+// };
 
-async function fund() {
-    const [deployer] = await ethers.getSigners();
+// async function fund() {
+//     const [deployer] = await ethers.getSigners();
 
-    new ethers.Contract(BUSD_ADDRESS, ERC20_ABI, deployer);
-    const locallyManipulatedBalance = ethers.utils.parseUnits("12000");
+//     new ethers.Contract(BUSD_ADDRESS, ERC20_ABI, deployer);
+//     const locallyManipulatedBalance = ethers.utils.parseUnits("12000");
 
-    const userAddress = await deployer.getAddress();
+//     const userAddress = await deployer.getAddress();
 
-    const index = ethers.utils.solidityKeccak256(
-        ["uint256", "uint256"],
-        [userAddress, BUSD_SLOT]
-    );
+//     const index = ethers.utils.solidityKeccak256(
+//         ["uint256", "uint256"],
+//         [userAddress, BUSD_SLOT]
+//     );
 
-    // Manipulate local balance (needs to be bytes32 string)
-    await setStorageAt(
-        BUSD_ADDRESS,
-        index.toString(),
-        toBytes32(locallyManipulatedBalance).toString()
-    );
-}
+//     // Manipulate local balance (needs to be bytes32 string)
+//     await setStorageAt(
+//         BUSD_ADDRESS,
+//         index.toString(),
+//         toBytes32(locallyManipulatedBalance).toString()
+//     );
+// }
 
 async function main() {
     const [deployer] = await ethers.getSigners();
     const balance = await ethers.provider.getBalance(deployer.address)
-    
+
     // Funds
-    await fund()
+    // await fund()
     const eBnbContract = await new ethers.Contract(eBNB_ADDRESS, CBNB_ABI, deployer);
     const eBusdContract = await new ethers.Contract(eBUSD_ADDRESS, CTOKEN_ABI, deployer);
     const busdContract = await new ethers.Contract(BUSD_ADDRESS, ERC20_ABI, deployer)
     console.log('Account:', deployer.address)
     console.log("Eth Funds:", ethers.utils.formatEther(balance));
-    console.log('BUSD Funds', await busdContract.balanceOf(deployer.address))
-    console.log('eBNB Funds', await eBnbContract.balanceOf(deployer.address))
-    console.log('eBUSD Funds', await eBusdContract.balanceOf(deployer.address))
-    console.log('eUSDC Funds', await eBnbContract.balanceOf(deployer.address))
-    console.log('eUSDT Funds', await eBnbContract.balanceOf(deployer.address))
+    // console.log('BUSD Funds', await busdContract.balanceOf(deployer.address))
+    // console.log('eBNB Funds', await eBnbContract.balanceOf(deployer.address))
+    // console.log('eBUSD Funds', await eBusdContract.balanceOf(deployer.address))
+    // console.log('eUSDC Funds', await eBnbContract.balanceOf(deployer.address))
+    // console.log('eUSDT Funds', await eBnbContract.balanceOf(deployer.address))
 
     // Chainlink Contracts
-    const feedOracle = await new ethers.Contract(ORACLE_ADDRESS, ORACLE_ABI, deployer)
-    await feedOracle.removeFeed(eBNB_ADDRESS)
-    await feedOracle.removeFeed(eBUSD_ADDRESS)
-    await feedOracle.removeFeed(eUSDC_ADDRESS)
-    await feedOracle.removeFeed(eUSDT_ADDRESS)
-    await feedOracle.setFixedPrice(eUSDT_ADDRESS, '1000045500000000000')
-    await feedOracle.setFixedPrice(eUSDC_ADDRESS, '1000045500000000000')
-    await feedOracle.setFixedPrice(eBUSD_ADDRESS, '1000045500000000000')
-    await feedOracle.setFixedPrice(eBNB_ADDRESS, '257770000000000000000')
-    console.log('BNB Price:', (await feedOracle.getUnderlyingPrice(eBNB_ADDRESS)))
-    console.log('BUSD Price:', (await feedOracle.getUnderlyingPrice(eBUSD_ADDRESS)))
-    console.log('USDC Price:', (await feedOracle.getUnderlyingPrice(eUSDC_ADDRESS)))
-    console.log('USDT Price:', (await feedOracle.getUnderlyingPrice(eUSDT_ADDRESS)))
+    // const feedOracle = await new ethers.Contract(ORACLE_ADDRESS, ORACLE_ABI, deployer)
+    // await feedOracle.removeFixedPrice(eBNB_ADDRESS)
+    // await feedOracle.removeFixedPrice(eBUSD_ADDRESS)
+    // await feedOracle.removeFixedPrice(eUSDC_ADDRESS)
+    // await feedOracle.removeFixedPrice(eUSDT_ADDRESS)
+
+    // await feedOracle.setFeed(eBNB_ADDRESS, '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526', 18)
+    // await feedOracle.setFeed(eBUSD_ADDRESS, '0x9331b55D9830EF609A2aBCfAc0FBCE050A52fdEa', 18)
+    // await feedOracle.setFeed(eUSDC_ADDRESS, '0x90c069C4538adAc136E051052E14c1cD799C41B7', 18)
+    // await feedOracle.setFeed(eUSDT_ADDRESS, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620', 18)
+    // await feedOracle.setFixedPrice(eUSDT_ADDRESS, '1000045500000000000')
+    // await feedOracle.setFixedPrice(eUSDC_ADDRESS, '1000045500000000000')
+    // await feedOracle.setFixedPrice(eBUSD_ADDRESS, '1000045500000000000')
+    // await feedOracle.setFixedPrice(eBNB_ADDRESS, '257770000000000000000')
+    // console.log('BNB Price:', (await feedOracle.getUnderlyingPrice(eBNB_ADDRESS)))
+    // console.log('BUSD Price:', (await feedOracle.getUnderlyingPrice(eBUSD_ADDRESS)))
+    // console.log('USDC Price:', (await feedOracle.getUnderlyingPrice(eUSDC_ADDRESS)))
+    // console.log('USDT Price:', (await feedOracle.getUnderlyingPrice(eUSDT_ADDRESS)))
 
     // Fork the comptroller & E contracts
     const comptrollerContract = new ethers.Contract(COMPTROLLER_ADDRESS, COMPTROLLER_ABI, deployer);
-    await comptrollerContract._setCollateralFactor(eBNB_ADDRESS, "500000000000000000")
-    await comptrollerContract._setCollateralFactor(eBUSD_ADDRESS, "500000000000000000")
-    await comptrollerContract._setCollateralFactor(eUSDC_ADDRESS, "500000000000000000")
-    await comptrollerContract._setCollateralFactor(eUSDT_ADDRESS, "500000000000000000")
-    await comptrollerContract.enterMarkets([eBNB_ADDRESS, eBUSD_ADDRESS, eUSDC_ADDRESS, eUSDT_ADDRESS])
+    await comptrollerContract._setCollateralFactor(eBNB_ADDRESS, "600000000000000000")
+    // await comptrollerContract._setCollateralFactor(eBUSD_ADDRESS, "500000000000000000")
+    // await comptrollerContract._setCollateralFactor(eUSDC_ADDRESS, "500000000000000000")
+    // await comptrollerContract._setCollateralFactor(eUSDT_ADDRESS, "500000000000000000")
+    // await comptrollerContract.enterMarkets([eBNB_ADDRESS, eBUSD_ADDRESS, eUSDC_ADDRESS, eUSDT_ADDRESS])
 
     // Mint 100 eBNB of eTokens
     // console.log('eBNB Deposit 1 BNB =========================================')
@@ -178,16 +185,15 @@ async function main() {
     // await busd.approve(eBUSD_ADDRESS, ethers.utils.parseEther('1000'))
     // await eBusdContract.mint(ethers.utils.parseEther('1000'))
 
-    // Borrow 0.5 BNB of eTokens
-    // console.log('eBNB Borrow 0.5 BNB =============================== ')
+    // Borrow 5 BNB of eTokens
+    // console.log('eBNB Borrow 5 BNB =============================== ')
     // await eBnbContract.borrow(ethers.utils.parseEther('5'))
 
     // Repay 0.5 BNB of eTokens
     // console.log('eBNB Repay 0.5 BNB =============================== ')
     // console.log(await eBnbContract.connect(deployer).repayBorrow({ value: ethers.utils.parseEther('0.5') }))
-
     // console.log('Comptroller: getAccountLiquidity:', await comptrollerContract.getAccountLiquidity(deployer.address))
-    
+
     // console.log('eBUSD Market =========================================')
     // console.log('BUSD: exchangeRateCurrent:', await eBusdContract.exchangeRateCurrent())
     // console.log('BUSD: Deposit Balance:', await eBusdContract.balanceOf(deployer.address))
