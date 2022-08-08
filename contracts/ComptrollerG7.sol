@@ -546,6 +546,10 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             return uint(Error.MARKET_NOT_LISTED);
         }
 
+        if (!markets[cTokenCollateral].accountMembership[borrower]) {
+            return uint(Error.MARKET_NOT_ENTERED);
+        }
+
         if (CToken(cTokenCollateral).comptroller() != CToken(cTokenBorrowed).comptroller()) {
             return uint(Error.COMPTROLLER_MISMATCH);
         }
@@ -791,11 +795,11 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         Exp memory denominator;
         Exp memory ratio;
 
-        numerator = mul_(Exp({mantissa: liquidationIncentiveMantissa}), Exp({mantissa: priceBorrowedMantissa}));
+        numerator = mul_(mul_(Exp({mantissa: liquidationIncentiveMantissa}), Exp({mantissa: priceBorrowedMantissa})), actualRepayAmount);
         denominator = mul_(Exp({mantissa: priceCollateralMantissa}), Exp({mantissa: exchangeRateMantissa}));
         ratio = div_(numerator, denominator);
 
-        seizeTokens = mul_ScalarTruncate(ratio, actualRepayAmount);
+        seizeTokens = truncate(ratio);
 
         return (uint(Error.NO_ERROR), seizeTokens);
     }
