@@ -561,6 +561,10 @@ contract Comptroller is ComptrollerV7Storage, ComptrollerInterface, ComptrollerE
             return uint(Error.MARKET_NOT_LISTED);
         }
 
+        if (!markets[cTokenCollateral].accountMembership[borrower]) {
+            return uint(Error.MARKET_NOT_ENTERED);
+        }
+
         if (CToken(cTokenCollateral).comptroller() != CToken(cTokenBorrowed).comptroller()) {
             return uint(Error.COMPTROLLER_MISMATCH);
         }
