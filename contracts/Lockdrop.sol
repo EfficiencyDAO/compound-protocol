@@ -32,6 +32,10 @@ contract LockdropVaultV2 is ExponentialNoError, ReentrancyGuard {
             claimUnlockTime_ > block.timestamp,
             "claim unlock time is before current time"
         );
+        require(
+            claimUnlockTime_ < (block.timestamp + 730 days),
+            "claim unlock time is greater than 2 years"
+        );
         name = name_;
         ctoken = ctoken_;
         claimUnlockTime = claimUnlockTime_;
