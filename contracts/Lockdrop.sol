@@ -79,15 +79,17 @@ contract LockdropVaultV2 is ExponentialNoError, ReentrancyGuard {
 
     function claim() external nonReentrant {
         require(block.timestamp > claimUnlockTime, "Claim Functionality Still Locked");
-        require(accountBalances[msg.sender] > 0, "Nothing to claim");
         uint256 claimAnnouncement = accountBalances[msg.sender];
+        require(claimAnnouncement > 0, "Nothing to claim");
+        accountBalances[msg.sender] = 0; // Zero out balance before external call
+
         CToken ct = CToken(ctoken);
         bool transferStatus = ct.transfer(
             msg.sender,
-            accountBalances[msg.sender]
+            claimAnnouncement
         );
         require(transferStatus, "Transfer Failed");
-        accountBalances[msg.sender] = 0;
+
         emit Claim(msg.sender, claimAnnouncement);
     }
 
