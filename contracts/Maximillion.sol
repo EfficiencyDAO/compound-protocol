@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.10;
 
-import "./CEther.sol";
+import "./CBnb.sol";
 
 /**
  * @title Compound's Maximillion Contract
@@ -9,40 +9,40 @@ import "./CEther.sol";
  */
 contract Maximillion {
     /**
-     * @notice The default cEther market to repay in
+     * @notice The default cBnb market to repay in
      */
-    CEther public cEther;
+    CBnb public cBnb;
 
     /**
-     * @notice Construct a Maximillion to repay max in a CEther market
+     * @notice Construct a Maximillion to repay max in a CBnb market
      */
-    constructor(CEther cEther_) public {
-        cEther = cEther_;
+    constructor(CBnb cBnb_) public {
+        cBnb = cBnb_;
     }
 
     /**
-     * @notice msg.sender sends Ether to repay an account's borrow in the cEther market
-     * @dev The provided Ether is applied towards the borrow balance, any excess is refunded
+     * @notice msg.sender sends Bnb to repay an account's borrow in the cBnb market
+     * @dev The provided Bnb is applied towards the borrow balance, any excess is refunded
      * @param borrower The address of the borrower account to repay on behalf of
      */
     function repayBehalf(address borrower) public payable {
-        repayBehalfExplicit(borrower, cEther);
+        repayBehalfExplicit(borrower, cBnb);
     }
 
     /**
-     * @notice msg.sender sends Ether to repay an account's borrow in a cEther market
-     * @dev The provided Ether is applied towards the borrow balance, any excess is refunded
+     * @notice msg.sender sends Bnb to repay an account's borrow in a cBnb market
+     * @dev The provided Bnb is applied towards the borrow balance, any excess is refunded
      * @param borrower The address of the borrower account to repay on behalf of
-     * @param cEther_ The address of the cEther contract to repay in
+     * @param cBnb_ The address of the cBnb contract to repay in
      */
-    function repayBehalfExplicit(address borrower, CEther cEther_) public payable {
+    function repayBehalfExplicit(address borrower, CBnb cBnb_) public payable {
         uint received = msg.value;
-        uint borrows = cEther_.borrowBalanceCurrent(borrower);
+        uint borrows = cBnb_.borrowBalanceCurrent(borrower);
         if (received > borrows) {
-            cEther_.repayBorrowBehalf{value: borrows}(borrower);
+            cBnb_.repayBorrowBehalf{value: borrows}(borrower);
             payable(msg.sender).transfer(received - borrows);
         } else {
-            cEther_.repayBorrowBehalf{value: received}(borrower);
+            cBnb_.repayBorrowBehalf{value: received}(borrower);
         }
     }
 }
