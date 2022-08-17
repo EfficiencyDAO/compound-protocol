@@ -45,3 +45,4 @@ node_modules_tmp
 .idea
 artifacts
 cache
+deployments/localhost
