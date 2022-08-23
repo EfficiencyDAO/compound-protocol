@@ -12,7 +12,8 @@ interface Feed {
         int256 answer,
         uint256 startedAt,
         uint256 updatedAt,
-        uint80 answeredInRound);
+        uint80 answeredInRound
+    );
 }
 
 contract FeedPriceOracle is PriceOracle {
@@ -54,12 +55,11 @@ contract FeedPriceOracle is PriceOracle {
         CToken cToken_,
         address feed_
     ) public onlyAdmin {
-        EIP20Interface token = EIP20Interface(CErc20(address(cToken_)).underlying());
+        uint8 feedDecimals = Feed(feed_).decimals();
+        uint8 tokenDecimals = cToken_.decimals();
+        uint8 decimalDelta = DECIMALS - tokenDecimals - feedDecimals;
 
-        uint8 tokenDecimals = token.decimals();
-        uint8 feedDecimals = uint8(DECIMALS - tokenDecimals - Feed(feed_).decimals());
-
-        feeds[address(cToken_)] = FeedData(feed_, tokenDecimals, feedDecimals);
+        feeds[address(cToken_)] = FeedData(feed_, tokenDecimals, decimalDelta);
     }
 
     function removeFeed(CToken cToken_) public onlyAdmin {
