@@ -30,21 +30,21 @@ const config: HardhatUserConfig = {
     networks: {
         localhost: {
             forking: {
-                url: 'https://data-seed-prebsc-1-s1.binance.org:8545'
+                url: process.env.BSC_TESTNET_RPC_NODE
             }
         },
         hardhat: {
             forking: {
-                url: 'https://data-seed-prebsc-1-s1.binance.org:8545'
+                url: process.env.BSC_TESTNET_RPC_NODE
             }
         },
         bsc: {
-            url: `https://bsc-dataseed.binance.org`,
+            url: process.env.BSC_MAINNET_RPC_NODE,
             chainId: 56,
             accounts: [process.env.MAINNET_PRIVKEY as string, process.env.DELEGATOR_PRIVKEY as string]
         },
         bscTestnet: {
-            url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+            url: process.env.BSC_TESTNET_RPC_NODE,
             chainId: 97,
             accounts: [process.env.TESTNET_PRIVKEY as string, process.env.DELEGATOR_PRIVKEY as string]
         }

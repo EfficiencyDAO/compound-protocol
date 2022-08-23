@@ -2,14 +2,15 @@ module.exports = async ({
     deployments,
     getNamedAccounts
 }) => {
-    console.log("08. Deploy eBNB")
+    console.log("09. Deploy eBUSD")
     const { deploy, save, execute } = deployments;
-    const { deployer, bnbFeed } = await getNamedAccounts()
+    const { deployer, busd, busdFeed } = await getNamedAccounts()
 
-    // Fetch Comptroller
+    // Fetch Comptroller and Delegate Implementation
     const Unitroller = await deployments.get('Unitroller');
+    const Implementation = await deployments.get('Implementation');
 
-    // Deploy eBNB's Whitepaper Interest Rate Model
+    // Deploy eBUSD's Whitepaper Interest Rate Model
     const Model = await deploy('WhitePaperInterestRateModel', {
         from: deployer,
         args: [
@@ -18,17 +19,20 @@ module.exports = async ({
         ]
     });
 
-    // Deploy eBNB token
-    const eBNB = await deploy('CBnb', {
+    // Deploy eBUSD token
+    const eBUSD = await deploy('CErc20Delegator', {
         from: deployer,
         args: [
+            busd,
             Unitroller.address,
             Model.address,
             "200000000000000000000000000",
-            "Efficiency BNB",
-            "eBNB",
+            "Efficiency BUSD",
+            "eBUSD",
             "8",
-            deployer
+            deployer,
+            Implementation.address,
+            0x00
         ]
     });
 
@@ -37,8 +41,8 @@ module.exports = async ({
         from: deployer,
     },
         "setFeed",
-        eBNB.address,
-        bnbFeed
+        eBUSD.address,
+        busdFeed
     )
 
     // Add market to Comptroller
@@ -46,12 +50,12 @@ module.exports = async ({
         from: deployer
     },
         "_supportMarket",
-        eBNB.address
+        eBUSD.address
     )
 
-    // Save eBNB Deployment
-    await save("eBNB", eBNB);
+    // Save eBUSD Deployment
+    await save("eBUSD", eBUSD);
 };
 
-module.exports.dependencies = ['Unitroller'];
-module.exports.tags = ['eBNB'];
+module.exports.dependencies = ['Implementation', 'Unitroller'];
+module.exports.tags = ['eBUSD'];

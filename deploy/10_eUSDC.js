@@ -2,14 +2,15 @@ module.exports = async ({
     deployments,
     getNamedAccounts
 }) => {
-    console.log("08. Deploy eBNB")
+    console.log("10. Deploy eUSDC")
     const { deploy, save, execute } = deployments;
-    const { deployer, bnbFeed } = await getNamedAccounts()
+    const { deployer, usdc, usdcFeed } = await getNamedAccounts()
 
-    // Fetch Comptroller
+    // Fetch Comptroller and Delegate Implementation
     const Unitroller = await deployments.get('Unitroller');
+    const Implementation = await deployments.get('Implementation');
 
-    // Deploy eBNB's Whitepaper Interest Rate Model
+    // Deploy eUSDC's Whitepaper Interest Rate Model
     const Model = await deploy('WhitePaperInterestRateModel', {
         from: deployer,
         args: [
@@ -18,17 +19,20 @@ module.exports = async ({
         ]
     });
 
-    // Deploy eBNB token
-    const eBNB = await deploy('CBnb', {
+    // Deploy eUSDC token
+    const eUSDC = await deploy('CErc20Delegator', {
         from: deployer,
         args: [
+            usdc,
             Unitroller.address,
             Model.address,
             "200000000000000000000000000",
-            "Efficiency BNB",
-            "eBNB",
+            "Efficiency USDC",
+            "eUSDC",
             "8",
-            deployer
+            deployer,
+            Implementation.address,
+            0x00
         ]
     });
 
@@ -37,8 +41,8 @@ module.exports = async ({
         from: deployer,
     },
         "setFeed",
-        eBNB.address,
-        bnbFeed
+        eUSDC.address,
+        usdcFeed
     )
 
     // Add market to Comptroller
@@ -46,12 +50,12 @@ module.exports = async ({
         from: deployer
     },
         "_supportMarket",
-        eBNB.address
+        eUSDC.address
     )
 
-    // Save eBNB Deployment
-    await save("eBNB", eBNB);
+    // Save eUSDC Deployment
+    await save("eUSDC", eUSDC);
 };
 
-module.exports.dependencies = ['Unitroller'];
-module.exports.tags = ['eBNB'];
+module.exports.dependencies = ['Implementation', 'Unitroller'];
+module.exports.tags = ['eUSDC'];

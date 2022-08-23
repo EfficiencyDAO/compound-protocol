@@ -2,7 +2,7 @@ module.exports = async ({
     deployments,
     getNamedAccounts,
 }) => {
-    console.log("24. Attach Oracle to comptroller")
+    console.log("06. Attach Oracle to comptroller")
     const { execute } = deployments;
     const { deployer } = await getNamedAccounts()
 
@@ -12,6 +12,7 @@ module.exports = async ({
         "_setPriceOracle",
         (await deployments.get('FeedPriceOracle')).address
     )
+
     return true
 };
 

@@ -2,14 +2,14 @@ module.exports = async ({
     deployments,
     getNamedAccounts
 }) => {
-    console.log("08. Deploy eBNB")
+    console.log("11. Deploy eUSDT")
     const { deploy, save, execute } = deployments;
-    const { deployer, bnbFeed } = await getNamedAccounts()
+    const { deployer, usdt, usdtFeed } = await getNamedAccounts()
 
-    // Fetch Comptroller
     const Unitroller = await deployments.get('Unitroller');
-
-    // Deploy eBNB's Whitepaper Interest Rate Model
+    const Implementation = await deployments.get('Implementation');
+    
+    // Deploy eUSDT's Whitepaper Interest Rate Model
     const Model = await deploy('WhitePaperInterestRateModel', {
         from: deployer,
         args: [
@@ -18,17 +18,20 @@ module.exports = async ({
         ]
     });
 
-    // Deploy eBNB token
-    const eBNB = await deploy('CBnb', {
+    // Deploy eUSDT token
+    const eUSDT = await deploy('CErc20Delegator', {
         from: deployer,
         args: [
+            usdt,
             Unitroller.address,
             Model.address,
             "200000000000000000000000000",
-            "Efficiency BNB",
-            "eBNB",
+            "Efficiency USDT",
+            "eUSDT",
             "8",
-            deployer
+            deployer,
+            Implementation.address,
+            0x00
         ]
     });
 
@@ -37,8 +40,8 @@ module.exports = async ({
         from: deployer,
     },
         "setFeed",
-        eBNB.address,
-        bnbFeed
+        eUSDT.address,
+        usdtFeed
     )
 
     // Add market to Comptroller
@@ -46,12 +49,12 @@ module.exports = async ({
         from: deployer
     },
         "_supportMarket",
-        eBNB.address
+        eUSDT.address
     )
 
-    // Save eBNB Deployment
-    await save("eBNB", eBNB);
+    // Save eUSDT Deployment
+    await save("eUSDT", eUSDT);
 };
 
-module.exports.dependencies = ['Unitroller'];
-module.exports.tags = ['eBNB'];
+module.exports.dependencies = ['Implementation', 'Unitroller'];
+module.exports.tags = ['eUSDT'];
