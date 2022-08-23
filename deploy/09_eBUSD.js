@@ -42,7 +42,8 @@ module.exports = async ({
     },
         "setFeed",
         eBUSD.address,
-        busdFeed
+        busdFeed,
+        18
     )
 
     // Add market to Comptroller

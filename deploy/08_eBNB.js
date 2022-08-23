@@ -38,7 +38,8 @@ module.exports = async ({
     },
         "setFeed",
         eBNB.address,
-        bnbFeed
+        bnbFeed,
+        18
     )
 
     // Add market to Comptroller

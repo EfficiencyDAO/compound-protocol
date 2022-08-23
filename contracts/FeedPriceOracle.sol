@@ -53,13 +53,13 @@ contract FeedPriceOracle is PriceOracle {
 
     function setFeed(
         CToken cToken_,
-        address feed_
+        address feed_,
+        uint8 underlyingDecimals_
     ) public onlyAdmin {
         uint8 feedDecimals = Feed(feed_).decimals();
-        uint8 tokenDecimals = cToken_.decimals();
-        uint8 decimalDelta = DECIMALS - tokenDecimals - feedDecimals;
+        uint8 decimalDelta = DECIMALS - underlyingDecimals_ - feedDecimals;
 
-        feeds[address(cToken_)] = FeedData(feed_, tokenDecimals, decimalDelta);
+        feeds[address(cToken_)] = FeedData(feed_, underlyingDecimals_, decimalDelta);
     }
 
     function removeFeed(CToken cToken_) public onlyAdmin {

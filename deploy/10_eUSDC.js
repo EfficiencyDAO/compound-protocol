@@ -42,7 +42,8 @@ module.exports = async ({
     },
         "setFeed",
         eUSDC.address,
-        usdcFeed
+        usdcFeed,
+        18
     )
 
     // Add market to Comptroller
