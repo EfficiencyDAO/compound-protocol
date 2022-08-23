@@ -10,12 +10,15 @@ module.exports = async ({
     const Unitroller = await deployments.get('Unitroller');
     const Implementation = await deployments.get('Implementation');
 
-    // Deploy eBUSD's Whitepaper Interest Rate Model
-    const Model = await deploy('WhitePaperInterestRateModel', {
+    // Deploy eBUSD's Jump Interest Rate Model
+    const Model = await deploy('JumpRateModelV2', {
         from: deployer,
         args: [
-            "20000000000000000",
-            "100000000000000000"
+            (0).toString(), // 0% base rate per year
+            (0.045 * 1e18).toString(), // 4.5% Multiplier per year
+            (3.50 * 1e18).toString(), // 350% Jump Multiplier per year
+            (0.80 * 1e18).toString(), // 80%  Kink
+            deployer
         ]
     });
 
