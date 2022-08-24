@@ -7,7 +7,7 @@ import "./ReentrancyGuard.sol";
 import "./ExponentialNoError.sol";
 import "./CToken.sol";
 
-contract LockdropVaultV2 is ExponentialNoError, ReentrancyGuard {
+contract Lockdrop is ExponentialNoError, ReentrancyGuard {
     using SafeMath for uint256;
 
     address owner;
