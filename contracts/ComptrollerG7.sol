@@ -1078,17 +1078,17 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             Market storage market = markets[address(cToken)];
             require(market.isListed, "comp market is not listed");
 
-            if (compSupplyState[address(cToken)].index == 0 && compSupplyState[address(cToken)].block == 0) {
+            if (compSupplyState[address(cToken)].index == 0 && compSupplyState[address(cToken)].timestamp == 0) {
                 compSupplyState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
-                    block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+                    timestamp: safe32(getBlockTimestamp(), "block timestamp exceeds 32 bits")
                 });
             }
 
-            if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].block == 0) {
+            if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].timestamp == 0) {
                 compBorrowState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
-                    block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+                    timestamp: safe32(getBlockTimestamp(), "block timestamp exceeds 32 bits")
                 });
             }
         }
@@ -1106,19 +1106,19 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     function updateCompSupplyIndex(address cToken) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
         uint supplySpeed = compSpeeds[cToken];
-        uint blockNumber = getBlockNumber();
-        uint deltaBlocks = sub_(blockNumber, uint(supplyState.block));
-        if (deltaBlocks > 0 && supplySpeed > 0) {
+        uint blockTimestamp = getBlockTimestamp();
+        uint deltaTimestamps = sub_(blockTimestamp, uint(supplyState.timestamp));
+        if (deltaTimestamps > 0 && supplySpeed > 0) {
             uint supplyTokens = CToken(cToken).totalSupply();
-            uint compAccrued = mul_(deltaBlocks, supplySpeed);
+            uint compAccrued = mul_(deltaTimestamps, supplySpeed);
             Double memory ratio = supplyTokens > 0 ? fraction(compAccrued, supplyTokens) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
             compSupplyState[cToken] = CompMarketState({
                 index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
+                timestamp: safe32(blockTimestamp, "block timestamp exceeds 32 bits")
             });
-        } else if (deltaBlocks > 0) {
-            supplyState.block = safe32(blockNumber, "block number exceeds 32 bits");
+        } else if (deltaTimestamps > 0) {
+            supplyState.timestamp = safe32(blockTimestamp, "block timestamp exceeds 32 bits");
         }
     }
 
@@ -1129,19 +1129,19 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     function updateCompBorrowIndex(address cToken, Exp memory marketBorrowIndex) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
         uint borrowSpeed = compSpeeds[cToken];
-        uint blockNumber = getBlockNumber();
-        uint deltaBlocks = sub_(blockNumber, uint(borrowState.block));
-        if (deltaBlocks > 0 && borrowSpeed > 0) {
+        uint blockTimestamp = getBlockTimestamp();
+        uint deltaTimestamps = sub_(blockTimestamp, uint(borrowState.timestamp));
+        if (deltaTimestamps > 0 && borrowSpeed > 0) {
             uint borrowAmount = div_(CToken(cToken).totalBorrows(), marketBorrowIndex);
-            uint compAccrued = mul_(deltaBlocks, borrowSpeed);
+            uint compAccrued = mul_(deltaTimestamps, borrowSpeed);
             Double memory ratio = borrowAmount > 0 ? fraction(compAccrued, borrowAmount) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
             compBorrowState[cToken] = CompMarketState({
                 index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
+                timestamp: safe32(blockTimestamp, "block timestamp exceeds 32 bits")
             });
-        } else if (deltaBlocks > 0) {
-            borrowState.block = safe32(blockNumber, "block number exceeds 32 bits");
+        } else if (deltaTimestamps > 0) {
+            borrowState.timestamp = safe32(blockTimestamp, "block timestamp exceeds 32 bits");
         }
     }
 
@@ -1196,14 +1196,14 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      */
     function updateContributorRewards(address contributor) public {
         uint compSpeed = compContributorSpeeds[contributor];
-        uint blockNumber = getBlockNumber();
-        uint deltaBlocks = sub_(blockNumber, lastContributorBlock[contributor]);
-        if (deltaBlocks > 0 && compSpeed > 0) {
-            uint newAccrued = mul_(deltaBlocks, compSpeed);
+        uint blockTimestamp = getBlockTimestamp();
+        uint deltaTimestamps = sub_(blockTimestamp, lastContributorBlock[contributor]);
+        if (deltaTimestamps > 0 && compSpeed > 0) {
+            uint newAccrued = mul_(deltaTimestamps, compSpeed);
             uint contributorAccrued = add_(compAccrued[contributor], newAccrued);
 
             compAccrued[contributor] = contributorAccrued;
-            lastContributorBlock[contributor] = blockNumber;
+            lastContributorBlock[contributor] = blockTimestamp;
         }
     }
 
@@ -1311,7 +1311,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             // release storage
             delete lastContributorBlock[contributor];
         } else {
-            lastContributorBlock[contributor] = getBlockNumber();
+            lastContributorBlock[contributor] = getBlockTimestamp();
         }
         compContributorSpeeds[contributor] = compSpeed;
 
@@ -1327,8 +1327,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         return allMarkets;
     }
 
-    function getBlockNumber() public view returns (uint) {
-        return block.number;
+    function getBlockTimestamp() public view returns (uint) {
+        return block.timestamp;
     }
 
     /**

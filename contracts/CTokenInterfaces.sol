@@ -62,9 +62,9 @@ contract CTokenStorage {
     uint public reserveFactorMantissa;
 
     /**
-     * @notice Block number that interest was last accrued at
+     * @notice Block timestamp that interest was last accrued at
      */
-    uint public accrualBlockNumber;
+    uint public accrualBlockTimestamp;
 
     /**
      * @notice Accumulator of the total earned interest rate since the opening of the market
@@ -208,8 +208,8 @@ abstract contract CTokenInterface is CTokenStorage {
     function balanceOf(address owner) virtual external view returns (uint);
     function balanceOfUnderlying(address owner) virtual external returns (uint);
     function getAccountSnapshot(address account) virtual external view returns (uint, uint, uint, uint);
-    function borrowRatePerBlock() virtual external view returns (uint);
-    function supplyRatePerBlock() virtual external view returns (uint);
+    function borrowRatePerTimestamp() virtual external view returns (uint);
+    function supplyRatePerTimestamp() virtual external view returns (uint);
     function totalBorrowsCurrent() virtual external returns (uint);
     function borrowBalanceCurrent(address account) virtual external returns (uint);
     function borrowBalanceStored(address account) virtual external view returns (uint);

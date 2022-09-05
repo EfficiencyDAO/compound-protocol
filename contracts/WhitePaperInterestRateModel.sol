@@ -9,24 +9,24 @@ import "./InterestRateModel.sol";
   * @notice The parameterized model described in section 2.4 of the original Compound Protocol whitepaper
   */
 contract WhitePaperInterestRateModel is InterestRateModel {
-    event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock);
+    event NewInterestParams(uint baseRatePerTimestamp, uint multiplierPerTimestamp);
 
     uint256 private constant BASE = 1e18;
 
     /**
-     * @notice The approximate number of blocks per year that is assumed by the interest rate model
+     * @notice The approximate number of timestamps per year that is assumed by the interest rate model
      */
-    uint public constant blocksPerYear = 10512000;
+    uint public constant timestampsPerYear = 31536000;
 
     /**
      * @notice The multiplier of utilization rate that gives the slope of the interest rate
      */
-    uint public multiplierPerBlock;
+    uint public multiplierPerTimestamp;
 
     /**
      * @notice The base interest rate which is the y-intercept when utilization rate is 0
      */
-    uint public baseRatePerBlock;
+    uint public baseRatePerTimestamp;
 
     /**
      * @notice Construct an interest rate model
@@ -34,10 +34,10 @@ contract WhitePaperInterestRateModel is InterestRateModel {
      * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by BASE)
      */
     constructor(uint baseRatePerYear, uint multiplierPerYear) public {
-        baseRatePerBlock = baseRatePerYear / blocksPerYear;
-        multiplierPerBlock = multiplierPerYear / blocksPerYear;
+        baseRatePerTimestamp = baseRatePerYear / timestampsPerYear;
+        multiplierPerTimestamp = multiplierPerYear / timestampsPerYear;
 
-        emit NewInterestParams(baseRatePerBlock, multiplierPerBlock);
+        emit NewInterestParams(baseRatePerTimestamp, multiplierPerTimestamp);
     }
 
     /**
@@ -57,24 +57,24 @@ contract WhitePaperInterestRateModel is InterestRateModel {
     }
 
     /**
-     * @notice Calculates the current borrow rate per block, with the error code expected by the market
+     * @notice Calculates the current borrow rate per timestamp, with the error code expected by the market
      * @param cash The amount of cash in the market
      * @param borrows The amount of borrows in the market
      * @param reserves The amount of reserves in the market
-     * @return The borrow rate percentage per block as a mantissa (scaled by BASE)
+     * @return The borrow rate percentage per timestamp as a mantissa (scaled by BASE)
      */
     function getBorrowRate(uint cash, uint borrows, uint reserves) override public view returns (uint) {
         uint ur = utilizationRate(cash, borrows, reserves);
-        return (ur * multiplierPerBlock / BASE) + baseRatePerBlock;
+        return (ur * multiplierPerTimestamp / BASE) + baseRatePerTimestamp;
     }
 
     /**
-     * @notice Calculates the current supply rate per block
+     * @notice Calculates the current supply rate per timestamp
      * @param cash The amount of cash in the market
      * @param borrows The amount of borrows in the market
      * @param reserves The amount of reserves in the market
      * @param reserveFactorMantissa The current reserve factor for the market
-     * @return The supply rate percentage per block as a mantissa (scaled by BASE)
+     * @return The supply rate percentage per timestamp as a mantissa (scaled by BASE)
      */
     function getSupplyRate(uint cash, uint borrows, uint reserves, uint reserveFactorMantissa) override public view returns (uint) {
         uint oneMinusReserveFactor = BASE - reserveFactorMantissa;
