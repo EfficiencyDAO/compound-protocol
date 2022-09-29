@@ -230,20 +230,20 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Returns the current per-block borrow interest rate for this cToken
-     * @return The borrow interest rate per block, scaled by 1e18
+     * @notice Returns the current per-timestamp borrow interest rate for this cToken
+     * @return The borrow interest rate per timestamp, scaled by 1e18
      */
-    function borrowRatePerBlock() override external view returns (uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("borrowRatePerBlock()"));
+    function borrowRatePerTimestamp() override external view returns (uint) {
+        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("borrowRatePerTimestamp()"));
         return abi.decode(data, (uint));
     }
 
     /**
-     * @notice Returns the current per-block supply interest rate for this cToken
-     * @return The supply interest rate per block, scaled by 1e18
+     * @notice Returns the current per-timestamp supply interest rate for this cToken
+     * @return The supply interest rate per timestamp, scaled by 1e18
      */
-    function supplyRatePerBlock() override external view returns (uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("supplyRatePerBlock()"));
+    function supplyRatePerTimestamp() override external view returns (uint) {
+        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("supplyRatePerTimestamp()"));
         return abi.decode(data, (uint));
     }
 

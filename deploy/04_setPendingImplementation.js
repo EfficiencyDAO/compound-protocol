@@ -2,7 +2,7 @@ module.exports = async ({
     deployments,
     getNamedAccounts,
 }) => {
-    console.log("4. Set Pending Implementation")
+    console.log("04. Set Pending Implementation")
     const { execute } = deployments;
     const { deployer } = await getNamedAccounts()
 

@@ -136,7 +136,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             return Error.MARKET_NOT_LISTED;
         }
 
-        if (marketToJoin.accountMembership[borrower] == true) {
+        if (marketToJoin.accountMembership[borrower]) {
             // already joined
             return Error.NO_ERROR;
         }
@@ -546,6 +546,10 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             return uint(Error.MARKET_NOT_LISTED);
         }
 
+        if (!markets[cTokenCollateral].accountMembership[borrower]) {
+            return uint(Error.MARKET_NOT_ENTERED);
+        }
+
         if (CToken(cTokenCollateral).comptroller() != CToken(cTokenBorrowed).comptroller()) {
             return uint(Error.COMPTROLLER_MISMATCH);
         }
@@ -791,11 +795,11 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         Exp memory denominator;
         Exp memory ratio;
 
-        numerator = mul_(Exp({mantissa: liquidationIncentiveMantissa}), Exp({mantissa: priceBorrowedMantissa}));
+        numerator = mul_(mul_(Exp({mantissa: liquidationIncentiveMantissa}), Exp({mantissa: priceBorrowedMantissa})), actualRepayAmount);
         denominator = mul_(Exp({mantissa: priceCollateralMantissa}), Exp({mantissa: exchangeRateMantissa}));
         ratio = div_(numerator, denominator);
 
-        seizeTokens = mul_ScalarTruncate(ratio, actualRepayAmount);
+        seizeTokens = truncate(ratio);
 
         return (uint(Error.NO_ERROR), seizeTokens);
     }
@@ -1008,7 +1012,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     function _setMintPaused(CToken cToken, bool state) public returns (bool) {
         require(markets[address(cToken)].isListed, "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
-        require(msg.sender == admin || state == true, "only admin can unpause");
+        require(msg.sender == admin || state, "only admin can unpause");
 
         mintGuardianPaused[address(cToken)] = state;
         emit ActionPaused(cToken, "Mint", state);
@@ -1018,7 +1022,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     function _setBorrowPaused(CToken cToken, bool state) public returns (bool) {
         require(markets[address(cToken)].isListed, "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
-        require(msg.sender == admin || state == true, "only admin can unpause");
+        require(msg.sender == admin || state, "only admin can unpause");
 
         borrowGuardianPaused[address(cToken)] = state;
         emit ActionPaused(cToken, "Borrow", state);
@@ -1027,7 +1031,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
     function _setTransferPaused(bool state) public returns (bool) {
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
-        require(msg.sender == admin || state == true, "only admin can unpause");
+        require(msg.sender == admin || state, "only admin can unpause");
 
         transferGuardianPaused = state;
         emit ActionPaused("Transfer", state);
@@ -1036,7 +1040,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
 
     function _setSeizePaused(bool state) public returns (bool) {
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
-        require(msg.sender == admin || state == true, "only admin can unpause");
+        require(msg.sender == admin || state, "only admin can unpause");
 
         seizeGuardianPaused = state;
         emit ActionPaused("Seize", state);
@@ -1072,19 +1076,19 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         } else if (compSpeed != 0) {
             // Add the COMP market
             Market storage market = markets[address(cToken)];
-            require(market.isListed == true, "comp market is not listed");
+            require(market.isListed, "comp market is not listed");
 
-            if (compSupplyState[address(cToken)].index == 0 && compSupplyState[address(cToken)].block == 0) {
+            if (compSupplyState[address(cToken)].index == 0 && compSupplyState[address(cToken)].timestamp == 0) {
                 compSupplyState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
-                    block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+                    timestamp: safe32(getBlockTimestamp(), "block timestamp exceeds 32 bits")
                 });
             }
 
-            if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].block == 0) {
+            if (compBorrowState[address(cToken)].index == 0 && compBorrowState[address(cToken)].timestamp == 0) {
                 compBorrowState[address(cToken)] = CompMarketState({
                     index: compInitialIndex,
-                    block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+                    timestamp: safe32(getBlockTimestamp(), "block timestamp exceeds 32 bits")
                 });
             }
         }
@@ -1102,19 +1106,19 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     function updateCompSupplyIndex(address cToken) internal {
         CompMarketState storage supplyState = compSupplyState[cToken];
         uint supplySpeed = compSpeeds[cToken];
-        uint blockNumber = getBlockNumber();
-        uint deltaBlocks = sub_(blockNumber, uint(supplyState.block));
-        if (deltaBlocks > 0 && supplySpeed > 0) {
+        uint blockTimestamp = getBlockTimestamp();
+        uint deltaTimestamps = sub_(blockTimestamp, uint(supplyState.timestamp));
+        if (deltaTimestamps > 0 && supplySpeed > 0) {
             uint supplyTokens = CToken(cToken).totalSupply();
-            uint compAccrued = mul_(deltaBlocks, supplySpeed);
+            uint compAccrued = mul_(deltaTimestamps, supplySpeed);
             Double memory ratio = supplyTokens > 0 ? fraction(compAccrued, supplyTokens) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
             compSupplyState[cToken] = CompMarketState({
                 index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
+                timestamp: safe32(blockTimestamp, "block timestamp exceeds 32 bits")
             });
-        } else if (deltaBlocks > 0) {
-            supplyState.block = safe32(blockNumber, "block number exceeds 32 bits");
+        } else if (deltaTimestamps > 0) {
+            supplyState.timestamp = safe32(blockTimestamp, "block timestamp exceeds 32 bits");
         }
     }
 
@@ -1125,19 +1129,19 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
     function updateCompBorrowIndex(address cToken, Exp memory marketBorrowIndex) internal {
         CompMarketState storage borrowState = compBorrowState[cToken];
         uint borrowSpeed = compSpeeds[cToken];
-        uint blockNumber = getBlockNumber();
-        uint deltaBlocks = sub_(blockNumber, uint(borrowState.block));
-        if (deltaBlocks > 0 && borrowSpeed > 0) {
+        uint blockTimestamp = getBlockTimestamp();
+        uint deltaTimestamps = sub_(blockTimestamp, uint(borrowState.timestamp));
+        if (deltaTimestamps > 0 && borrowSpeed > 0) {
             uint borrowAmount = div_(CToken(cToken).totalBorrows(), marketBorrowIndex);
-            uint compAccrued = mul_(deltaBlocks, borrowSpeed);
+            uint compAccrued = mul_(deltaTimestamps, borrowSpeed);
             Double memory ratio = borrowAmount > 0 ? fraction(compAccrued, borrowAmount) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
             compBorrowState[cToken] = CompMarketState({
                 index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
+                timestamp: safe32(blockTimestamp, "block timestamp exceeds 32 bits")
             });
-        } else if (deltaBlocks > 0) {
-            borrowState.block = safe32(blockNumber, "block number exceeds 32 bits");
+        } else if (deltaTimestamps > 0) {
+            borrowState.timestamp = safe32(blockTimestamp, "block timestamp exceeds 32 bits");
         }
     }
 
@@ -1192,14 +1196,14 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      */
     function updateContributorRewards(address contributor) public {
         uint compSpeed = compContributorSpeeds[contributor];
-        uint blockNumber = getBlockNumber();
-        uint deltaBlocks = sub_(blockNumber, lastContributorBlock[contributor]);
-        if (deltaBlocks > 0 && compSpeed > 0) {
-            uint newAccrued = mul_(deltaBlocks, compSpeed);
+        uint blockTimestamp = getBlockTimestamp();
+        uint deltaTimestamps = sub_(blockTimestamp, lastContributorBlock[contributor]);
+        if (deltaTimestamps > 0 && compSpeed > 0) {
+            uint newAccrued = mul_(deltaTimestamps, compSpeed);
             uint contributorAccrued = add_(compAccrued[contributor], newAccrued);
 
             compAccrued[contributor] = contributorAccrued;
-            lastContributorBlock[contributor] = blockNumber;
+            lastContributorBlock[contributor] = blockTimestamp;
         }
     }
 
@@ -1233,7 +1237,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         for (uint i = 0; i < cTokens.length; i++) {
             CToken cToken = cTokens[i];
             require(markets[address(cToken)].isListed, "market must be listed");
-            if (borrowers == true) {
+            if (borrowers) {
                 Exp memory borrowIndex = Exp({mantissa: cToken.borrowIndex()});
                 updateCompBorrowIndex(address(cToken), borrowIndex);
                 for (uint j = 0; j < holders.length; j++) {
@@ -1241,7 +1245,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
                     compAccrued[holders[j]] = grantCompInternal(holders[j], compAccrued[holders[j]]);
                 }
             }
-            if (suppliers == true) {
+            if (suppliers) {
                 updateCompSupplyIndex(address(cToken));
                 for (uint j = 0; j < holders.length; j++) {
                     distributeSupplierComp(address(cToken), holders[j]);
@@ -1307,7 +1311,7 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
             // release storage
             delete lastContributorBlock[contributor];
         } else {
-            lastContributorBlock[contributor] = getBlockNumber();
+            lastContributorBlock[contributor] = getBlockTimestamp();
         }
         compContributorSpeeds[contributor] = compSpeed;
 
@@ -1323,8 +1327,8 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
         return allMarkets;
     }
 
-    function getBlockNumber() public view returns (uint) {
-        return block.number;
+    function getBlockTimestamp() public view returns (uint) {
+        return block.timestamp;
     }
 
     /**
@@ -1332,6 +1336,6 @@ contract ComptrollerG7 is ComptrollerV5Storage, ComptrollerInterface, Comptrolle
      * @return The address of COMP
      */
     function getCompAddress() public view returns (address) {
-        return 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+        return 0xc00e94Cb662C3520282E6f5717214004A7f26888; // TODO: Switch with deployed EFF Address once generated
     }
 }

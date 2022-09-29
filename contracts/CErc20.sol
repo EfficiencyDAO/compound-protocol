@@ -119,13 +119,21 @@ contract CErc20 is CToken, CErc20Interface {
 
     /**
      * @notice A public function to sweep accidental ERC-20 transfers to this contract. Tokens are sent to admin (timelock)
+     *  Check whether contract's underlying balance stays the same before and after the Sweep
      * @param token The address of the ERC-20 token to sweep
      */
     function sweepToken(EIP20NonStandardInterface token) override external {
         require(msg.sender == admin, "CErc20::sweepToken: only admin can sweep tokens");
         require(address(token) != underlying, "CErc20::sweepToken: can not sweep underlying token");
+        
+        EIP20Interface underlyingToken = EIP20Interface(underlying);    
+        uint256 underlyingBalanceBefore = underlyingToken.balanceOf(address(this));
+    
         uint256 balance = token.balanceOf(address(this));
         token.transfer(admin, balance);
+        
+        uint256 underlyingBalanceAfter = underlyingToken.balanceOf(address(this));
+        require(underlyingBalanceBefore == underlyingBalanceAfter);
     }
 
     /**

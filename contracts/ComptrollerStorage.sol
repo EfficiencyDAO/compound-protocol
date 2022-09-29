@@ -98,14 +98,14 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
         // The market's last updated compBorrowIndex or compSupplyIndex
         uint224 index;
 
-        // The block number the index was last updated at
-        uint32 block;
+        // The timestamp the index was last updated at
+        uint32 timestamp;
     }
 
     /// @notice A list of all markets
     CToken[] public allMarkets;
 
-    /// @notice The rate at which the flywheel distributes COMP, per block
+    /// @notice The rate at which the flywheel distributes COMP, per timestamp
     uint public compRate;
 
     /// @notice The portion of compRate that each market currently receives
@@ -136,7 +136,7 @@ contract ComptrollerV4Storage is ComptrollerV3Storage {
 }
 
 contract ComptrollerV5Storage is ComptrollerV4Storage {
-    /// @notice The portion of COMP that each contributor receives per block
+    /// @notice The portion of COMP that each contributor receives per timestamp
     mapping(address => uint) public compContributorSpeeds;
 
     /// @notice Last block at which a contributor's COMP rewards have been allocated
@@ -144,10 +144,10 @@ contract ComptrollerV5Storage is ComptrollerV4Storage {
 }
 
 contract ComptrollerV6Storage is ComptrollerV5Storage {
-    /// @notice The rate at which comp is distributed to the corresponding borrow market (per block)
+    /// @notice The rate at which comp is distributed to the corresponding borrow market (per timestamp)
     mapping(address => uint) public compBorrowSpeeds;
 
-    /// @notice The rate at which comp is distributed to the corresponding supply market (per block)
+    /// @notice The rate at which comp is distributed to the corresponding supply market (per timestamp)
     mapping(address => uint) public compSupplySpeeds;
 }
 

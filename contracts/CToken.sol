@@ -30,7 +30,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
                         string memory symbol_,
                         uint8 decimals_) public {
         require(msg.sender == admin, "only admin may initialize the market");
-        require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
+        require(accrualBlockTimestamp == 0 && borrowIndex == 0, "market may only be initialized once");
 
         // Set initial exchange rate
         initialExchangeRateMantissa = initialExchangeRateMantissa_;
@@ -40,11 +40,11 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         uint err = _setComptroller(comptroller_);
         require(err == NO_ERROR, "setting comptroller failed");
 
-        // Initialize block number and borrow index (block number mocks depend on comptroller being set)
-        accrualBlockNumber = getBlockNumber();
+        // Initialize block timestamp and borrow index (block timestamp mocks depend on comptroller being set)
+        accrualBlockTimestamp = getBlockTimestamp();
         borrowIndex = mantissaOne;
 
-        // Set the interest rate model (depends on block number / borrow index)
+        // Set the interest rate model (depends on block timestamp / borrow index)
         err = _setInterestRateModelFresh(interestRateModel_);
         require(err == NO_ERROR, "setting interest rate model failed");
 
@@ -193,26 +193,26 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
     }
 
     /**
-     * @dev Function to simply retrieve block number
+     * @dev Function to simply retrieve block timestamp
      *  This exists mainly for inheriting test contracts to stub this result.
      */
-    function getBlockNumber() virtual internal view returns (uint) {
-        return block.number;
+    function getBlockTimestamp() virtual internal view returns (uint) {
+        return block.timestamp;
     }
 
     /**
-     * @notice Returns the current per-block borrow interest rate for this cToken
-     * @return The borrow interest rate per block, scaled by 1e18
+     * @notice Returns the current per-timestamp borrow interest rate for this cToken
+     * @return The borrow interest rate per timestamp, scaled by 1e18
      */
-    function borrowRatePerBlock() override external view returns (uint) {
+    function borrowRatePerTimestamp() override external view returns (uint) {
         return interestRateModel.getBorrowRate(getCashPrior(), totalBorrows, totalReserves);
     }
 
     /**
-     * @notice Returns the current per-block supply interest rate for this cToken
-     * @return The supply interest rate per block, scaled by 1e18
+     * @notice Returns the current per-timestamp supply interest rate for this cToken
+     * @return The supply interest rate per timestamp, scaled by 1e18
      */
-    function supplyRatePerBlock() override external view returns (uint) {
+    function supplyRatePerTimestamp() override external view returns (uint) {
         return interestRateModel.getSupplyRate(getCashPrior(), totalBorrows, totalReserves, reserveFactorMantissa);
     }
 
@@ -325,12 +325,12 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
      *   up to the current block and writes new checkpoint to storage.
      */
     function accrueInterest() virtual override public returns (uint) {
-        /* Remember the initial block number */
-        uint currentBlockNumber = getBlockNumber();
-        uint accrualBlockNumberPrior = accrualBlockNumber;
+        /* Remember the initial block timestamp */
+        uint currentBlockTimestamp = getBlockTimestamp();
+        uint accrualBlockTimestampPrior = accrualBlockTimestamp;
 
         /* Short-circuit accumulating 0 interest */
-        if (accrualBlockNumberPrior == currentBlockNumber) {
+        if (accrualBlockTimestampPrior == currentBlockTimestamp) {
             return NO_ERROR;
         }
 
@@ -345,7 +345,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
 
         /* Calculate the number of blocks elapsed since the last accrual */
-        uint blockDelta = currentBlockNumber - accrualBlockNumberPrior;
+        uint blockDelta = currentBlockTimestamp - accrualBlockTimestampPrior;
 
         /*
          * Calculate the interest accumulated into borrows and reserves and the new index:
@@ -367,7 +367,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         // (No safe failures beyond this point)
 
         /* We write the previously calculated values into storage */
-        accrualBlockNumber = currentBlockNumber;
+        accrualBlockTimestamp = currentBlockTimestamp;
         borrowIndex = borrowIndexNew;
         totalBorrows = totalBorrowsNew;
         totalReserves = totalReservesNew;
@@ -402,8 +402,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert MintComptrollerRejection(allowed);
         }
 
-        /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        /* Verify market's block timestamp equals current block timestamp */
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
             revert MintFreshnessCheck();
         }
 
@@ -510,8 +510,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert RedeemComptrollerRejection(allowed);
         }
 
-        /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        /* Verify market's block timestamp equals current block timestamp */
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
             revert RedeemFreshnessCheck();
         }
 
@@ -569,8 +569,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert BorrowComptrollerRejection(allowed);
         }
 
-        /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        /* Verify market's block timestamp equals current block timestamp */
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
             revert BorrowFreshnessCheck();
         }
 
@@ -647,8 +647,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert RepayBorrowComptrollerRejection(allowed);
         }
 
-        /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        /* Verify market's block timestamp equals current block timestamp */
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
             revert RepayBorrowFreshnessCheck();
         }
 
@@ -725,13 +725,13 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert LiquidateComptrollerRejection(allowed);
         }
 
-        /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        /* Verify market's block timestamp equals current block timestamp */
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
             revert LiquidateFreshnessCheck();
         }
 
-        /* Verify cTokenCollateral market's block number equals current block number */
-        if (cTokenCollateral.accrualBlockNumber() != getBlockNumber()) {
+        /* Verify cTokenCollateral market's block timestamp equals current block timestamp */
+        if (cTokenCollateral.accrualBlockTimestamp() != getBlockTimestamp()) {
             revert LiquidateCollateralFreshnessCheck();
         }
 
@@ -873,7 +873,7 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
       */
     function _acceptAdmin() override external returns (uint) {
         // Check caller is pendingAdmin and pendingAdmin ≠ address(0)
-        if (msg.sender != pendingAdmin || msg.sender == address(0)) {
+        if (msg.sender != pendingAdmin) {
             revert AcceptAdminPendingAdminCheck();
         }
 
@@ -939,8 +939,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert SetReserveFactorAdminCheck();
         }
 
-        // Verify market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
+        // Verify market's block timestamp equals current block timestamp
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
             revert SetReserveFactorFreshCheck();
         }
 
@@ -981,8 +981,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
         uint totalReservesNew;
         uint actualAddAmount;
 
-        // We fail gracefully unless market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
+        // We fail gracefully unless market's block timestamp equals current block timestamp
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
             revert AddReservesFactorFreshCheck(actualAddAmount);
         }
 
@@ -1039,8 +1039,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert ReduceReservesAdminCheck();
         }
 
-        // We fail gracefully unless market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
+        // We fail gracefully unless market's block timestamp equals current block timestamp
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
             revert ReduceReservesFreshCheck();
         }
 
@@ -1099,8 +1099,8 @@ abstract contract CToken is CTokenInterface, ExponentialNoError, TokenErrorRepor
             revert SetInterestRateModelOwnerCheck();
         }
 
-        // We fail gracefully unless market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
+        // We fail gracefully unless market's block timestamp equals current block timestamp
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
             revert SetInterestRateModelFreshCheck();
         }
 

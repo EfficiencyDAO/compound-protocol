@@ -7,7 +7,7 @@ import "./ReentrancyGuard.sol";
 import "./ExponentialNoError.sol";
 import "./CToken.sol";
 
-contract LockdropVaultV2 is ExponentialNoError, ReentrancyGuard {
+contract Lockdrop is ExponentialNoError, ReentrancyGuard {
     using SafeMath for uint256;
 
     address owner;
@@ -31,6 +31,10 @@ contract LockdropVaultV2 is ExponentialNoError, ReentrancyGuard {
         require(
             claimUnlockTime_ > block.timestamp,
             "claim unlock time is before current time"
+        );
+        require(
+            claimUnlockTime_ < (block.timestamp + 730 days),
+            "claim unlock time is greater than 2 years"
         );
         name = name_;
         ctoken = ctoken_;
@@ -75,15 +79,17 @@ contract LockdropVaultV2 is ExponentialNoError, ReentrancyGuard {
 
     function claim() external nonReentrant {
         require(block.timestamp > claimUnlockTime, "Claim Functionality Still Locked");
-        require(accountBalances[msg.sender] > 0, "Nothing to claim");
         uint256 claimAnnouncement = accountBalances[msg.sender];
+        require(claimAnnouncement > 0, "Nothing to claim");
+        accountBalances[msg.sender] = 0; // Zero out balance before external call
+
         CToken ct = CToken(ctoken);
         bool transferStatus = ct.transfer(
             msg.sender,
-            accountBalances[msg.sender]
+            claimAnnouncement
         );
         require(transferStatus, "Transfer Failed");
-        accountBalances[msg.sender] = 0;
+
         emit Claim(msg.sender, claimAnnouncement);
     }
 

@@ -233,6 +233,7 @@ contract EFF {
     function _transferTokens(address src, address dst, uint96 amount) internal {
         require(src != address(0), "EFF::_transferTokens: cannot transfer from the zero address");
         require(dst != address(0), "EFF::_transferTokens: cannot transfer to the zero address");
+        require(dst != address(this), "EFF::_transferTokens: cannot transfer to contract address");
 
         balances[src] = sub96(balances[src], amount, "EFF::_transferTokens: transfer amount exceeds balance");
         balances[dst] = add96(balances[dst], amount, "EFF::_transferTokens: transfer amount overflows");

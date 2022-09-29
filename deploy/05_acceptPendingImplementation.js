@@ -2,7 +2,7 @@ module.exports = async ({
     deployments,
     getNamedAccounts,
 }) => {
-    console.log("5. Accept Implementation")
+    console.log("05. Accept Implementation")
     const { execute, save } = deployments;
     const { deployer } = await getNamedAccounts()
     const UnitrollerAddress = (await deployments.get('Unitroller')).address

@@ -12,7 +12,7 @@ contract Reservoir {
   /// @notice The block number when the Reservoir started (immutable)
   uint public dripStart;
 
-  /// @notice Tokens per block that to drip to target (immutable)
+  /// @notice Tokens per timestamp that to drip to target (immutable)
   uint public dripRate;
 
   /// @notice Reference to token to drip (immutable)
@@ -26,7 +26,7 @@ contract Reservoir {
 
   /**
     * @notice Constructs a Reservoir
-    * @param dripRate_ Numer of tokens per block to drip
+    * @param dripRate_ Numer of tokens per timestamp to drip
     * @param token_ The token to drip
     * @param target_ The recipient of dripped tokens
     */
