@@ -102,8 +102,25 @@ New features and PRs (back to compound) will be added in as necessary.
 
 The summary of changes is as follows:
 
-- Include hardhat for updated deployment configuration and testing.
-- Include FeedPriceOracle.sol, to fetch oracle prices from Chainlink.
-- Include Governance/EFF.sol to deploy the EFF token.
-- Include Lockdrop.sol, for EFF lockdrop token distribution.
-- Setup a eMarkets deployment sequence with hardhat-deploy.
+### Structure
+- Include hardhat for updated deployment configuration and testing
+- Include Governance/EFF.sol to deploy the EFF token
+- Setup an eMarkets deployment sequence with hardhat-deploy
+
+### Corrections / Optimization
+- Remove `msg.sender == address(0)` from CToken and Comptroller
+- Remove `fixBadAccruals` from Comptroller, TBD after proposal 65
+- Prevent EFF token transfer to contract address
+- Remove SimplePriceOracle as its unused and unsafe
+- Updated SafeMath contract to a compatible version for solidity 0.8.x
+- Add checks for whether contract's underlying balance stays the same before and after Sweep
+- Optimize Comptroller's `liquidateCalculateSeizeTokens` function to prevent loss of precision
+- Gas optimization on Comptroller by reducing boolean === true checks
+- Add a check to see if collateral to be seized has entered the market
+- Use timestamps instead of block number for interest rate calculation
+
+### Additional Updates
+- Include FeedPriceOracle.sol, to fetch oracle prices from Chainlink
+- Include Lockdrop.sol, for EFF lockdrop token distribution
+- Prevent claim unlock times greater than 2 years for Lockdrop.sol
+- Optimize gas, zero out account balance before ext call for Lockdrop.sol
