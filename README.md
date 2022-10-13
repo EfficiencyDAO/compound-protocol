@@ -7,7 +7,7 @@ The Efficiency Protocol offers supplying or borrowing assets through the BSC net
 
 Before getting started with this repo, please read about [Compound Protocol](https://github.com/compound-finance/compound-protocol/)
 
-For questions about interacting with Efficiency, please visit [our Discord server](https://compound.finance/discord).
+For questions about interacting with Efficiency, please visit [our Discord server](https://efficiency.finance/discord).
 
 For security concerns, please visit [https://efficiency.finance/security](https://efficiency.finance/security) or email [security@efficiency.finance](mailto:security@efficiency.finance).
 
